@@ -1,0 +1,8 @@
+amazonProperties:
+  endpointUrl: https://s3.eu-west-2.amazonaws.com
+  accessKey: AKIA56Y6NLEVO3VOU3PF
+  secretKey: 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
+  bucketName: test-upload-jide
+
+server:
+  port: 9001
