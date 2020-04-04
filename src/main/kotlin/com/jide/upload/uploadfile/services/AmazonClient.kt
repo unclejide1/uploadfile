@@ -54,10 +54,13 @@ class AmazonClient(
         }
 
         private fun generateFileName(multipartFile: MultipartFile) :String?{
-                return LocalDateTime.now().toString() + multipartFile.originalFilename?.replace(" ", "_")
+                return  UUID.randomUUID().toString()+LocalDateTime.now().toString() + multipartFile.originalFilename?.replace(" ", "_")
         }
 
-        private fun uploadFileToS3Bucket(fileName:String?, file:File){
+        private fun uploadFileToS3BucketPrivate(fileName:String?, file:File){
+                s3Client.putObject(PutObjectRequest(bucketName,fileName,file).withCannedAcl(CannedAccessControlList.Private))
+        }
+        private fun uploadFileToS3BucketPublic(fileName:String?, file:File){
                 s3Client.putObject(PutObjectRequest(bucketName,fileName,file).withCannedAcl(CannedAccessControlList.PublicRead))
         }
 
@@ -67,7 +70,14 @@ class AmazonClient(
                     var file: File = convertMultiPartToFile(multipartFile)
                         var fileName: String? = generateFileName(multipartFile)
                         fileUrl = "$endPointUrl/$bucketName/$fileName"
-                        uploadFileToS3Bucket(fileName, file)
+                        if (fileName != null) {
+                                if(fileName.contains("pdf")) {
+                                        uploadFileToS3BucketPrivate(fileName, file)
+                                }else{
+
+                                        uploadFileToS3BucketPublic(fileName,file)
+                                }
+                        }
                         file.delete()
                 }catch (e:Exception){
                         println(e.message)
