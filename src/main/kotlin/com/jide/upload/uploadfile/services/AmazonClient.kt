@@ -3,14 +3,17 @@ package com.jide.upload.uploadfile.services
 
 
 import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.amazonaws.services.s3.model.DeleteObjectRequest
 import com.amazonaws.services.s3.model.PutObjectRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -42,15 +45,18 @@ class AmazonClient(
         @PostConstruct
         fun initializeAmazon(){
                 val credentials: AWSCredentials = BasicAWSCredentials(accessKey, secretKey)
-                s3Client = AmazonS3Client(credentials)
+                s3Client = AmazonS3ClientBuilder.standard()
+                        .withCredentials(AWSStaticCredentialsProvider(credentials)).withRegion("eu-west-2")
+                        .build();
         }
 
         private fun convertMultiPartToFile(file:MultipartFile) :File {
-                var convertFile:File = File(file.originalFilename)
-                var fos: FileOutputStream = FileOutputStream(convertFile)
+                val convertFile:File = File(file.originalFilename)
+                val fos: FileOutputStream = FileOutputStream(convertFile)
                 fos.write(file.bytes)
                 fos.close()
                 return convertFile
+
         }
 
         private fun generateFileName(multipartFile: MultipartFile) :String?{
